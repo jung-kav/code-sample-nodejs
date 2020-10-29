@@ -1,13 +1,13 @@
-const AWS = require('aws-sdk');
+const AWS = require("aws-sdk");
 
 const dynamodb = new AWS.DynamoDB.DocumentClient({
-  apiVersion: '2012-08-10',
-  endpoint: new AWS.Endpoint('http://localhost:8000'),
-  region: 'us-west-2',
+  apiVersion: "2012-08-10",
+  endpoint: new AWS.Endpoint("http://localhost:8000"),
+  region: "us-west-2",
   // what could you do to improve performance?
 });
 
-const tableName = 'SchoolStudents';
+const tableName = "SchoolStudents";
 
 /**
  * The entry point into the lambda
@@ -20,8 +20,41 @@ const tableName = 'SchoolStudents';
  * @param {string} event.studentLastName
  * @param {string} event.studentGrade
  */
-exports.handler = (event) => {
-  // TODO validate that all expected attributes are present (assume they are all required)
-  // TODO use the AWS.DynamoDB.DocumentClient to save the 'SchoolStudent' record
+exports.handler = (event, context, callback) => {
+  const {
+    schoolId,
+    schoolName,
+    studentId,
+    studentFirstName,
+    studentLastName,
+    studentGrade,
+  } = event;
+
+  // validate that all expected attributes are present (assume they are all required)
+  if (
+    schoolId &&
+    schoolName &&
+    studentId &&
+    studentFirstName &&
+    studentLastName &&
+    studentGrade
+  ) {
+    // use the AWS.DynamoDB.DocumentClient to save the 'SchoolStudent' record
+    dynamodb.put(
+      {
+        TableName: tableName,
+        Item: {
+          schoolId,
+          schoolName,
+          studentId,
+          studentFirstName,
+          studentLastName,
+          studentGrade,
+        },
+      },
+      callback
+    );
+  }
+
   // The 'SchoolStudents' table key is composed of schoolId (partition key) and studentId (range key).
 };
