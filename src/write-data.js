@@ -7,7 +7,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient({
   // what could you do to improve performance?
 });
 
-const tableName = "SchoolStudents";
+const TableName = "SchoolStudents";
 
 /**
  * The entry point into the lambda
@@ -30,29 +30,19 @@ exports.handler = async (event) => {
     studentGrade,
   } = event;
 
-  // validate that all expected attributes are present (assume they are all required)
-  if (
-    schoolId &&
-    schoolName &&
-    studentId &&
-    studentFirstName &&
-    studentLastName &&
-    studentGrade
-  ) {
-    // use the AWS.DynamoDB.DocumentClient to save the 'SchoolStudent' record
-    return dynamodb
-      .put({
-        TableName: tableName,
-        Item: {
-          schoolId,
-          schoolName,
-          studentId,
-          studentFirstName,
-          studentLastName,
-          studentGrade,
-        },
-      })
-      .promise();
+  const Item = {
+    schoolId,
+    schoolName,
+    studentId,
+    studentFirstName,
+    studentLastName,
+    studentGrade,
+  };
+
+  const allAttributesPresent = Object.keys(Item).every((key) => Item[key]);
+
+  if (allAttributesPresent) {
+    return dynamodb.put({ TableName, Item }).promise();
   }
 
   return new Promise((_, reject) => reject());
