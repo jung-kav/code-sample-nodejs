@@ -40,8 +40,8 @@ exports.handler = async (event) => {
     studentGrade
   ) {
     // use the AWS.DynamoDB.DocumentClient to save the 'SchoolStudent' record
-    dynamodb.put(
-      {
+    return dynamodb
+      .put({
         TableName: tableName,
         Item: {
           schoolId,
@@ -51,17 +51,11 @@ exports.handler = async (event) => {
           studentLastName,
           studentGrade,
         },
-      },
-      (err, data) => {
-        return new Promise((resolve, reject) => {
-          if (data) {
-            resolve(data);
-          }
-          reject(err);
-        });
-      }
-    );
+      })
+      .promise();
   }
+
+  return new Promise((_, reject) => reject());
 
   // The 'SchoolStudents' table key is composed of schoolId (partition key) and studentId (range key).
 };

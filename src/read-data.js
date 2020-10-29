@@ -25,18 +25,18 @@ exports.handler = async (event) => {
   const { schoolId, studentId } = event;
   const params = {
     TableName: tableName,
-    IndexName: studentLastNameGsiName,
-    KeyConditionExpression: "HashKey = :hkey and RangeKey > :rkey",
-    ExpressionAttributeValues: {
-      ":hkey": schoolId,
-      ":rkey": studentId,
+    Key: {
+      schoolId,
+      studentId,
     },
   };
 
-  const result = await dynamodb.query(params).promise();
-  console.log(result);
-
-  return JSON.stringify(result);
+  try {
+    const { Item } = await dynamodb.get(params).promise();
+    return [Item];
+  } catch (error) {
+    return error;
+  }
 
   // TODO (extra credit) if event.studentLastName exists then query using the 'studentLastNameGsi' GSI and return the results.
 
