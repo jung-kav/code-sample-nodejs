@@ -20,29 +20,47 @@ const studentLastNameGsiName = "studentLastNameGsi";
  */
 exports.handler = async (event) => {
   const { schoolId, studentId, studentLastName } = event;
-  const params = {
+  const query = {
     TableName: tableName,
-    KeyConditionExpression: "schoolId = :schoolId and studentId = :studentId",
-    ExpressionAttributeValues: {
-      ":schoolId": schoolId,
-      ":studentId": studentId,
-    },
+    Limit: 5,
+  };
+
+  const getAllItems = async (params, items = []) => {
+    const { LastEvaluatedKey, Items } = await dynamodb.query(params).promise();
+
+    if (Items) {
+      items.push(...Items);
+    }
+
+    if (!LastEvaluatedKey) {
+      return items;
+    }
+
+    return getAllItems(
+      { ...params, ExclusiveStartKey: LastEvaluatedKey },
+      items
+    );
   };
 
   if (studentLastName) {
-    params.IndexName = studentLastNameGsiName;
-    params.KeyConditionExpression = "studentLastName = :studentLastName";
-    params.ExpressionAttributeValues = {
+    query.IndexName = studentLastNameGsiName;
+    query.KeyConditionExpression = "studentLastName = :studentLastName";
+    query.ExpressionAttributeValues = {
       ":studentLastName": studentLastName,
     };
+
+    return getAllItems(query);
   }
 
-  return await dynamodb
-    .query(params)
-    .promise()
-    .then((res) => (res.Items ? res.Items : []))
-    .catch((err) => err);
+  query.KeyConditionExpression = [
+    ...(schoolId ? ["schoolId = :schoolId"] : []),
+    ...(studentId ? ["studentId = :studentId"] : []),
+  ].join(" and ");
 
-  // TODO (extra credit) limit the amount of records returned in the query to 5 and then implement the logic to return all
-  //  pages of records found by the query (uncomment the test which exercises this functionality)
+  query.ExpressionAttributeValues = {
+    ...(schoolId && { ":schoolId": schoolId }),
+    ...(studentId && { ":studentId": studentId }),
+  };
+
+  return getAllItems(query);
 };
