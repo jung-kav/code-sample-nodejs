@@ -20,7 +20,7 @@ const tableName = "SchoolStudents";
  * @param {string} event.studentLastName
  * @param {string} event.studentGrade
  */
-exports.handler = (event, context, callback) => {
+exports.handler = async (event) => {
   const {
     schoolId,
     schoolName,
@@ -52,7 +52,14 @@ exports.handler = (event, context, callback) => {
           studentGrade,
         },
       },
-      callback
+      (err, data) => {
+        return new Promise((resolve, reject) => {
+          if (data) {
+            resolve(data);
+          }
+          reject(err);
+        });
+      }
     );
   }
 
