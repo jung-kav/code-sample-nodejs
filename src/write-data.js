@@ -56,6 +56,4 @@ exports.handler = async (event) => {
   }
 
   return new Promise((_, reject) => reject());
-
-  // The 'SchoolStudents' table key is composed of schoolId (partition key) and studentId (range key).
 };

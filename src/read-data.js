@@ -25,15 +25,18 @@ exports.handler = async (event) => {
   const { schoolId, studentId } = event;
   const params = {
     TableName: tableName,
-    Key: {
-      schoolId,
-      studentId,
+    KeyConditionExpression: "schoolId = :schoolId and studentId = :studentId",
+    ExpressionAttributeValues: {
+      ":schoolId": schoolId,
+      ":studentId": studentId,
     },
   };
 
   try {
-    const { Item } = await dynamodb.get(params).promise();
-    return [Item];
+    return await dynamodb
+      .query(params)
+      .promise()
+      .then((res) => (res.Items ? res.Items : []));
   } catch (error) {
     return error;
   }
